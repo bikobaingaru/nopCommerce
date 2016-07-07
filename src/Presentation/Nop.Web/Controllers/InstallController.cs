@@ -100,6 +100,23 @@ namespace Nop.Web.Controllers
                     }
                 }
 
+                //Sometimes on slow servers (hosting)there could be situations when database requires some time to be created.
+                //But we we already start creation of tables and sample data.
+                //As a result there is an exception thrown and the installation process cannot continue.
+                //That's why we are in a cycle of 10 times trying to connect to a database with a delay of one second.
+                //And if we can do it, then the test is successful.
+                //If not, then we throw an exception.
+                for (var i = 0; i <= 10; i++)
+                {
+                    if (i == 10)
+                        throw new Exception("Unable to connect to the new database");
+
+                    if (!this.SqlServerDatabaseExists(connectionString))
+                        Thread.Sleep(1000);
+                    else
+                        break;
+                }
+
                 return string.Empty;
             }
             catch (Exception ex)
@@ -309,10 +326,6 @@ namespace Nop.Web.Controllers
                                 var errorCreatingDatabase = CreateDatabase(connectionString, collation);
                                 if (!String.IsNullOrEmpty(errorCreatingDatabase))
                                     throw new Exception(errorCreatingDatabase);
-
-                                //Database cannot be created sometimes. Weird! Seems to be Entity Framework issue
-                                //that's just wait 5 seconds (3 seconds is not enough for some reasons)
-                                Thread.Sleep(5000);
                             }
                         }
                         else
