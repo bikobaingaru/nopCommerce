@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using Nop.Admin.Extensions;
 using Nop.Admin.Models.Catalog;
 using Nop.Core;
+using Nop.Core.Caching;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Services.Catalog;
@@ -50,6 +51,7 @@ namespace Nop.Admin.Controllers
         private readonly CatalogSettings _catalogSettings;
         private readonly IWorkContext _workContext;
         private readonly IImportManager _importManager;
+        private readonly ICacheManager _cacheManager;
 
         #endregion
 
@@ -73,7 +75,8 @@ namespace Nop.Admin.Controllers
             ICustomerActivityService customerActivityService,
             CatalogSettings catalogSettings,
             IWorkContext workContext,
-            IImportManager importManager)
+            IImportManager importManager, 
+            ICacheManager cacheManager)
         {
             this._categoryService = categoryService;
             this._categoryTemplateService = categoryTemplateService;
@@ -96,6 +99,7 @@ namespace Nop.Admin.Controllers
             this._catalogSettings = catalogSettings;
             this._workContext = workContext;
             this._importManager = importManager;
+            this._cacheManager = cacheManager;
         }
 
         #endregion
