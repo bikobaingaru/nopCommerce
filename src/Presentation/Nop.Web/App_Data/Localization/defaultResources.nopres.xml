@@ -4327,7 +4327,7 @@
     <Value>Currency code</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.Fields.CurrencyCode.Hint">
-    <Value>The currency code. For a list of currency codes, go to: http://www.iso.org/iso/support/currency_codes_list-1.htm.</Value>
+    <Value>The currency code. For a list of currency codes, go to: https://en.wikipedia.org/wiki/ISO_4217</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.Fields.CurrencyCode.Range">
     <Value>Currency code must be less than or equal to 5 characters.</Value>
@@ -13191,6 +13191,9 @@
   <LocaleResource Name="Admin.System.Warnings.DirectoryPermission.Wrong">
     <Value>The '{0}' account is not granted with Modify permission on folder '{1}'. Please configure these permissions.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.System.Warnings.Errors">
+    <Value>The store has some error(s). Please find more information on the Warnings page.</Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.System.Warnings.ExchangeCurrency.NotSet">
     <Value>Primary exchange rate currency is not set</Value>
   </LocaleResource>
@@ -13232,12 +13235,6 @@
   </LocaleResource>
   <LocaleResource Name="Admin.System.Warnings.PrimaryCurrency.Set">
     <Value>Primary store currency is set</Value>
-  </LocaleResource>
-  <LocaleResource Name="Admin.System.Warnings.Shipping.NoComputationMethods">
-    <Value>No shipping rate computation methods enabled</Value>
-  </LocaleResource>
-  <LocaleResource Name="Admin.System.Warnings.Shipping.OnlyOneOffline">
-    <Value>Only one offline shipping rate computation method is recommended to use</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.System.Warnings.URL.Match">
     <Value>Specified store URL matches this store URL</Value>
