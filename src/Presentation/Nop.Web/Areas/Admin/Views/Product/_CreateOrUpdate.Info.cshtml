@@ -18,7 +18,7 @@
     Html.AppendScriptParts("~/lib/tagEditor/jquery.caret.min.js");
 }
 
-<script type="text/javascript">
+<script>
     $(document).ready(function() {
         @if (!Model.IsLoggedInAsVendor)
         {
@@ -456,12 +456,21 @@
             $('#required-product-names').text('');
         }
     }
+
+    $(document).ready(function () {
+        if ('@Model.Sku') {
+            warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: '@Model.Sku' });
+        }
+        $('#@Html.IdFor(model => model.Sku)').on('input propertychange paste', function () {
+            warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: $(this).val() });
+        });
+    });
 </script>
 
 <div class="raw clearfix">
     <div class="@(Model.ProductEditorSettingsModel.OneColumnProductPage ? "col-md-12" : "col-md-7")">
         <div class="panel-group">            
-            @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_info_column_left_top", additionalData = Model.Id })
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsInfoColumnLeftTop, additionalData = Model })
             <div class="panel panel-default">
                 <div class="panel-heading">
                     @T("Admin.Catalog.Products.CommonInfo")
@@ -1112,7 +1121,7 @@
                         </div>
                         <div class="col-md-9">
 							<nop-select asp-for="SelectedDiscountIds" asp-items="Model.AvailableDiscounts" asp-multiple="true"/>
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function() {
                                     var discountsIdsInput = $('#@Html.IdFor(model => model.SelectedDiscountIds)').data("kendoMultiSelect");
                                     discountsIdsInput.setOptions({
@@ -1176,7 +1185,7 @@
                         </p>
                         <div id="tierprices-grid"></div>
 
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $("#tierprices-grid").kendoGrid({
                                     dataSource: {
@@ -1282,7 +1291,7 @@
                             @T("Admin.Catalog.Products.TierPrices.AddNew")
                         </button>
                         <input type="submit" id="btnRefreshTierPrices" style="display: none" />
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $('#btnRefreshTierPrices').click(function() {
                                     $("#tierprices-grid").data('kendoGrid').dataSource.read();
@@ -1300,7 +1309,7 @@
                     </div>
                 }
             </div>
-            @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_info_column_left_bottom", additionalData = Model.Id })
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsInfoColumnLeftBottom, additionalData = Model })
         </div>
     </div>
     <div class="@(Model.ProductEditorSettingsModel.OneColumnProductPage ? "col-md-12" : "col-md-5")">
@@ -1309,7 +1318,7 @@
                 var leftColumnClass = Model.ProductEditorSettingsModel.OneColumnProductPage ? "col-md-3" : "col-md-4";
                 var rightColumnClass = Model.ProductEditorSettingsModel.OneColumnProductPage ? "col-md-9" : "col-md-8";
             }
-            @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_info_column_right_top", additionalData = Model.Id })
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsInfoColumnRightTop, additionalData = Model })
             <div class="panel panel-default margin-bottom" id="group-associated-products">
                 <div class="panel-heading">
                     @T("Admin.Catalog.Products.AssociatedProducts")
@@ -1328,7 +1337,7 @@
 
                         <div id="associatedproducts-grid"></div>
 
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $("#associatedproducts-grid").kendoGrid({
                                     dataSource: {
@@ -1430,7 +1439,7 @@
                             @T("Admin.Catalog.Products.AssociatedProducts.AddNew")
                         </button>
                         <input type="submit" id="btnRefreshAssociatedProducts" style="display: none" />
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $('#btnRefreshAssociatedProducts').click(function() {
                                     //refresh grid
@@ -1528,7 +1537,7 @@
                                                 </td>
                                                 <td style="width: 10%;">
                                                     <input type="checkbox" id="warehouse_used_@(item.WarehouseId)" name="warehouse_used_@(item.WarehouseId)" value="@item.WarehouseId" checked="@item.WarehouseUsed" />
-                                                    <script type="text/javascript">
+                                                    <script>
                                                         $(document).ready(function() {
                                                             $("#warehouse_used_@(item.WarehouseId)").change(toggleWarehouseUsed_@(item.WarehouseId));
                                                             toggleWarehouseUsed_@(item.WarehouseId)();
@@ -1794,7 +1803,7 @@
                         </div>
                         <div class="@rightColumnClass">
 							<nop-select asp-for="SelectedCategoryIds" asp-items="Model.AvailableCategories" asp-multiple="true" />
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function() {
                                     var categoryIdsInput = $('#@Html.IdFor(model => model.SelectedCategoryIds)').data("kendoMultiSelect");
                                     categoryIdsInput.setOptions({
@@ -1823,7 +1832,7 @@
                         </div>
                         <div class="@rightColumnClass">
 							<nop-select asp-for="SelectedManufacturerIds" asp-items="Model.AvailableManufacturers" asp-multiple="true" />
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function() {
                                     var manufacturersIdsInput = $('#@Html.IdFor(model => model.SelectedManufacturerIds)').data("kendoMultiSelect");
                                     manufacturersIdsInput.setOptions({
@@ -1852,7 +1861,7 @@
                         </div>
                         <div class="@rightColumnClass">
 							<nop-select asp-for="SelectedStoreIds" asp-items="Model.AvailableStores" asp-multiple="true" />
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function() {
                                     var storesIdsInput = $('#@Html.IdFor(model => model.SelectedStoreIds)').data("kendoMultiSelect");
                                     storesIdsInput.setOptions({
@@ -1897,7 +1906,7 @@
                         </div>
                         <div class="@rightColumnClass">
 							<nop-select asp-for="SelectedCustomerRoleIds" asp-items="Model.AvailableCustomerRoles" asp-multiple="true" />
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function() {
                                     var rolesIdsInput = $('#@Html.IdFor(model => model.SelectedCustomerRoleIds)').data("kendoMultiSelect");
                                     rolesIdsInput.setOptions({
@@ -1949,7 +1958,7 @@
                                     <nop-editor asp-for="RequiredProductIds" />
                                     <span class="input-group-btn">
                                         <input type="submit" id="btnRefreshRequiredProducts" style="display: none" />
-                                        <script type="text/javascript">
+                                        <script>
                                             $(document).ready(function () {
                                                 $('#btnRefreshRequiredProducts').click(function () {
                                                     //refresh product list
@@ -1993,7 +2002,7 @@
                         </p>
                         <div id="relatedproducts-grid"></div>
 
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $("#relatedproducts-grid").kendoGrid({
                                     dataSource: {
@@ -2095,7 +2104,7 @@
                             @T("Admin.Catalog.Products.RelatedProducts.AddNew")
                         </button>
                         <input type="submit" id="btnRefreshRelatedProducts" style="display: none" />
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $('#btnRefreshRelatedProducts').click(function() {
                                     //refresh grid
@@ -2128,7 +2137,7 @@
                         </p>
                         <div id="crosssellproducts-grid"></div>
 
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $("#crosssellproducts-grid").kendoGrid({
                                     dataSource: {
@@ -2200,7 +2209,7 @@
                             @T("Admin.Catalog.Products.CrossSells.AddNew")
                         </button>
                         <input type="submit" id="btnRefreshCrossSellProducts" style="display: none" />
-                        <script type="text/javascript">
+                        <script>
                             $(document).ready(function() {
                                 $('#btnRefreshCrossSellProducts').click(function() {
                                     //refresh grid
@@ -2221,7 +2230,7 @@
                     </div>
                 }
             </div>
-            @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_info_column_right_bottom", additionalData = Model.Id })        
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsInfoColumnRightBottom, additionalData = Model })        
         </div>
     </div>
 </div>

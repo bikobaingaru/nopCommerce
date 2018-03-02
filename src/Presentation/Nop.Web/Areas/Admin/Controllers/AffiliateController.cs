@@ -105,6 +105,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 model.Address.CountryEnabled = true;
                 model.Address.CountryRequired = true;
                 model.Address.StateProvinceEnabled = true;
+                model.Address.CountyEnabled = true;
+                model.Address.CountyRequired = true;
                 model.Address.CityEnabled = true;
                 model.Address.CityRequired = true;
                 model.Address.StreetAddressEnabled = true;
@@ -230,7 +232,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 _affiliateService.InsertAffiliate(affiliate);
 
                 //activity log
-                _customerActivityService.InsertActivity("AddNewAffiliate", _localizationService.GetResource("ActivityLog.AddNewAffiliate"), affiliate.Id);
+                _customerActivityService.InsertActivity("AddNewAffiliate",
+                    string.Format(_localizationService.GetResource("ActivityLog.AddNewAffiliate"), affiliate.Id), affiliate);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Affiliates.Added"));
                 return continueEditing ? RedirectToAction("Edit", new { id = affiliate.Id }) : RedirectToAction("List");
@@ -285,7 +288,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 _affiliateService.UpdateAffiliate(affiliate);
 
                 //activity log
-                _customerActivityService.InsertActivity("EditAffiliate", _localizationService.GetResource("ActivityLog.EditAffiliate"), affiliate.Id);
+                _customerActivityService.InsertActivity("EditAffiliate",
+                    string.Format(_localizationService.GetResource("ActivityLog.EditAffiliate"), affiliate.Id), affiliate);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Affiliates.Updated"));
                 if (continueEditing)
@@ -318,7 +322,8 @@ namespace Nop.Web.Areas.Admin.Controllers
             _affiliateService.DeleteAffiliate(affiliate);
 
             //activity log
-            _customerActivityService.InsertActivity("DeleteAffiliate", _localizationService.GetResource("ActivityLog.DeleteAffiliate"), affiliate.Id);
+            _customerActivityService.InsertActivity("DeleteAffiliate",
+                string.Format(_localizationService.GetResource("ActivityLog.DeleteAffiliate"), affiliate.Id), affiliate);
 
             SuccessNotification(_localizationService.GetResource("Admin.Affiliates.Deleted"));
             return RedirectToAction("List");

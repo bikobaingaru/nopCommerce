@@ -10,10 +10,10 @@ using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Domain.Tax;
-using Nop.Core.Plugins;
 using Nop.Services.Common;
 using Nop.Services.Directory;
 using Nop.Services.Logging;
+using Nop.Services.Plugins;
 
 namespace Nop.Services.Tax
 {
@@ -190,6 +190,7 @@ namespace Nop.Services.Tax
                     {
                         Address1 = pickupPoint.Address,
                         City = pickupPoint.City,
+                        County = pickupPoint.County,
                         Country = country,
                         CountryId = country?.Id ?? 0,
                         StateProvince = state,

@@ -128,7 +128,7 @@ namespace Nop.Web.Controllers
             var blogPosts = _blogService.GetAllBlogPosts(_storeContext.CurrentStore.Id, languageId);
             foreach (var blogPost in blogPosts)
             {
-                var blogPostUrl = Url.RouteUrl("BlogPost", new { SeName = blogPost.GetSeName(blogPost.LanguageId, ensureTwoPublishedLanguages: false) }, _webHelper.IsCurrentConnectionSecured() ? "https" : "http");
+                var blogPostUrl = Url.RouteUrl("BlogPost", new { SeName = blogPost.GetSeName(blogPost.LanguageId, ensureTwoPublishedLanguages: false) }, _webHelper.CurrentRequestProtocol);
                 items.Add(new RssItem(blogPost.Title, blogPost.Body, new Uri(blogPostUrl),
                     $"urn:store:{_storeContext.CurrentStore.Id}:blog:post:{blogPost.Id}", blogPost.CreatedOnUtc));
             }
@@ -204,7 +204,8 @@ namespace Nop.Web.Controllers
                     _workflowMessageService.SendBlogCommentNotificationMessage(comment, _localizationSettings.DefaultAdminLanguageId);
 
                 //activity log
-                _customerActivityService.InsertActivity("PublicStore.AddBlogComment", _localizationService.GetResource("ActivityLog.PublicStore.AddBlogComment"));
+                _customerActivityService.InsertActivity("PublicStore.AddBlogComment",
+                    _localizationService.GetResource("ActivityLog.PublicStore.AddBlogComment"), comment);
 
                 //raise event
                 if (comment.IsApproved)

@@ -130,7 +130,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 UpdateAttributeLocales(specificationAttribute, model);
 
                 //activity log
-                _customerActivityService.InsertActivity("AddNewSpecAttribute", _localizationService.GetResource("ActivityLog.AddNewSpecAttribute"), specificationAttribute.Name);
+                _customerActivityService.InsertActivity("AddNewSpecAttribute",
+                    string.Format(_localizationService.GetResource("ActivityLog.AddNewSpecAttribute"), specificationAttribute.Name), specificationAttribute);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Catalog.Attributes.SpecificationAttributes.Added"));
 
@@ -188,7 +189,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 UpdateAttributeLocales(specificationAttribute, model);
 
                 //activity log
-                _customerActivityService.InsertActivity("EditSpecAttribute", _localizationService.GetResource("ActivityLog.EditSpecAttribute"), specificationAttribute.Name);
+                _customerActivityService.InsertActivity("EditSpecAttribute",
+                    string.Format(_localizationService.GetResource("ActivityLog.EditSpecAttribute"), specificationAttribute.Name), specificationAttribute);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Catalog.Attributes.SpecificationAttributes.Updated"));
 
@@ -221,7 +223,8 @@ namespace Nop.Web.Areas.Admin.Controllers
             _specificationAttributeService.DeleteSpecificationAttribute(specificationAttribute);
 
             //activity log
-            _customerActivityService.InsertActivity("DeleteSpecAttribute", _localizationService.GetResource("ActivityLog.DeleteSpecAttribute"), specificationAttribute.Name);
+            _customerActivityService.InsertActivity("DeleteSpecAttribute",
+                string.Format(_localizationService.GetResource("ActivityLog.DeleteSpecAttribute"), specificationAttribute.Name), specificationAttribute);
 
             SuccessNotification(_localizationService.GetResource("Admin.Catalog.Attributes.SpecificationAttributes.Deleted"));
             return RedirectToAction("List");
@@ -392,6 +395,34 @@ namespace Nop.Web.Areas.Admin.Controllers
             return Json(result);
         }
 
+        #endregion
+
+        #region Mapped products
+
+        [HttpPost]
+        public virtual IActionResult UsedByProducts(int specificationAttributeId, DataSourceRequest command)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageAttributes))
+                return AccessDeniedKendoGridJson();
+
+            var products = _specificationAttributeService.GetProductsBySpecificationAttributeId(specificationAttributeId, command.Page - 1,
+                command.PageSize);
+           
+            var gridModel = new DataSourceResult
+            {
+                Data = products.Select(product => new SpecificationAttributeOptionModel.UsedByProducts
+                {
+                    SpecificationAttributeId = specificationAttributeId,
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Published = product.Published
+                }),
+                Total = products.TotalCount
+            };
+
+            return Json(gridModel);
+        }
+        
         #endregion
     }
 }

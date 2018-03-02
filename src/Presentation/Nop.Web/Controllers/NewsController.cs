@@ -110,7 +110,7 @@ namespace Nop.Web.Controllers
             var newsItems = _newsService.GetAllNews(languageId, _storeContext.CurrentStore.Id);
             foreach (var n in newsItems)
             {
-                var newsUrl = Url.RouteUrl("NewsItem", new { SeName = n.GetSeName(n.LanguageId, ensureTwoPublishedLanguages: false) }, _webHelper.IsCurrentConnectionSecured() ? "https" : "http");
+                var newsUrl = Url.RouteUrl("NewsItem", new { SeName = n.GetSeName(n.LanguageId, ensureTwoPublishedLanguages: false) }, _webHelper.CurrentRequestProtocol);
                 items.Add(new RssItem(n.Title, n.Short, new Uri(newsUrl), $"urn:store:{_storeContext.CurrentStore.Id}:news:blog:{n.Id}", n.CreatedOnUtc));
             }
             feed.Items = items;
@@ -185,7 +185,8 @@ namespace Nop.Web.Controllers
                     _workflowMessageService.SendNewsCommentNotificationMessage(comment, _localizationSettings.DefaultAdminLanguageId);
 
                 //activity log
-                _customerActivityService.InsertActivity("PublicStore.AddNewsComment", _localizationService.GetResource("ActivityLog.PublicStore.AddNewsComment"));
+                _customerActivityService.InsertActivity("PublicStore.AddNewsComment",
+                    _localizationService.GetResource("ActivityLog.PublicStore.AddNewsComment"), comment);
 
                 //raise event
                 if (comment.IsApproved)

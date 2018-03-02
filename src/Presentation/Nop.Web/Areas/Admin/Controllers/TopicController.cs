@@ -2,8 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Web.Areas.Admin.Extensions;
-using Nop.Web.Areas.Admin.Models.Topics;
+using Nop.Core;
 using Nop.Core.Domain.Topics;
 using Nop.Services.Customers;
 using Nop.Services.Localization;
@@ -12,6 +11,9 @@ using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
 using Nop.Services.Topics;
+using Nop.Web.Areas.Admin.Extensions;
+using Nop.Web.Areas.Admin.Models.Topics;
+using Nop.Web.Framework.Extensions;
 using Nop.Web.Framework.Kendoui;
 using Nop.Web.Framework.Mvc.Filters;
 
@@ -33,6 +35,7 @@ namespace Nop.Web.Areas.Admin.Controllers
         private readonly ICustomerService _customerService;
         private readonly ICustomerActivityService _customerActivityService;
         private readonly IAclService _aclService;
+        private readonly IWebHelper _webHelper;
 
         #endregion Fields
 
@@ -49,7 +52,8 @@ namespace Nop.Web.Areas.Admin.Controllers
             ITopicTemplateService topicTemplateService,
             ICustomerService customerService,
             ICustomerActivityService customerActivityService,
-            IAclService aclService)
+            IAclService aclService,
+            IWebHelper webHelper)
         {
             this._topicService = topicService;
             this._languageService = languageService;
@@ -63,6 +67,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             this._customerService = customerService;
             this._customerActivityService = customerActivityService;
             this._aclService = aclService;
+            this._webHelper = webHelper;
         }
 
         #endregion
@@ -237,9 +242,18 @@ namespace Nop.Web.Areas.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageTopics))
                 return AccessDeniedKendoGridJson();
 
-            var topicModels = _topicService.GetAllTopics(model.SearchStoreId, true, true)
+            if (model.AvailableStores.SelectionIsNotPossible())
+                model.SearchStoreId = 0;
+
+            var topics = _topicService.GetAllTopics(model.SearchStoreId, true, true);
+
+            if (!string.IsNullOrEmpty(model.SearchKeywords))
+                topics = topics.Where(t => (t.Title?.Contains(model.SearchKeywords) ?? false) || (t.Body?.Contains(model.SearchKeywords) ?? false)).ToList();
+
+            var topicModels = topics
                 .Select(x =>x.ToModel())
                 .ToList();
+
             //little performance optimization: ensure that "Body" is not returned
             foreach (var topic in topicModels)
             {
@@ -308,7 +322,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 SuccessNotification(_localizationService.GetResource("Admin.ContentManagement.Topics.Added"));
 
                 //activity log
-                _customerActivityService.InsertActivity("AddNewTopic", _localizationService.GetResource("ActivityLog.AddNewTopic"), topic.Title ?? topic.SystemName);
+                _customerActivityService.InsertActivity("AddNewTopic",
+                    string.Format(_localizationService.GetResource("ActivityLog.AddNewTopic"), topic.Title ?? topic.SystemName), topic);
 
                 if (continueEditing)
                 {
@@ -343,7 +358,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 return RedirectToAction("List");
 
             var model = topic.ToModel();
-            model.Url = Url.RouteUrl("Topic", new { SeName = topic.GetSeName() }, "http");
+            model.Url = Url.RouteUrl("Topic", new { SeName = topic.GetSeName() }, _webHelper.CurrentRequestProtocol);
             //templates
             PrepareTemplatesModel(model);
             //ACL
@@ -397,7 +412,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                 SuccessNotification(_localizationService.GetResource("Admin.ContentManagement.Topics.Updated"));
                 
                 //activity log
-                _customerActivityService.InsertActivity("EditTopic", _localizationService.GetResource("ActivityLog.EditTopic"), topic.Title ?? topic.SystemName);
+                _customerActivityService.InsertActivity("EditTopic",
+                    string.Format(_localizationService.GetResource("ActivityLog.EditTopic"), topic.Title ?? topic.SystemName), topic);
 
                 if (continueEditing)
                 {
@@ -411,7 +427,7 @@ namespace Nop.Web.Areas.Admin.Controllers
 
             //If we got this far, something failed, redisplay form
 
-            model.Url = Url.RouteUrl("Topic", new { SeName = topic.GetSeName() }, "http");
+            model.Url = Url.RouteUrl("Topic", new { SeName = topic.GetSeName() }, _webHelper.CurrentRequestProtocol);
             //templates
             PrepareTemplatesModel(model);
             //ACL
@@ -437,7 +453,8 @@ namespace Nop.Web.Areas.Admin.Controllers
             SuccessNotification(_localizationService.GetResource("Admin.ContentManagement.Topics.Deleted"));
 
             //activity log
-            _customerActivityService.InsertActivity("DeleteTopic", _localizationService.GetResource("ActivityLog.DeleteTopic"), topic.Title ?? topic.SystemName);
+            _customerActivityService.InsertActivity("DeleteTopic",
+                string.Format(_localizationService.GetResource("ActivityLog.DeleteTopic"), topic.Title ?? topic.SystemName), topic);
 
             return RedirectToAction("List");
         }

@@ -1,14 +1,19 @@
-﻿@model DiscountModel
+@model DiscountModel
+@inject AdminAreaSettings adminAreaSettings
+@{
+    var defaultGridPageSize = adminAreaSettings.DefaultGridPageSize;
+    var gridPageSizes = adminAreaSettings.GridPageSizes;
+}
 
 <div class="panel-group">
-    @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_discount_details_applied_to_manufacturers_top", additionalData = Model.Id })
+    @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.DiscountDetailsAppliedToManufacturersTop, additionalData = Model })
     <div class="panel panel-default">
         @if (Model.Id > 0)
         {
             <div class="panel-body">
                 <div id="manufacturers-grid"></div>
 
-                <script type="text/javascript">
+                <script>
                     $(document).ready(function() {
                         $("#manufacturers-grid").kendoGrid({
                             dataSource: {
@@ -44,15 +49,14 @@
                                     // Cancel the changes
                                     this.cancelChanges();
                                 },
+                                pageSize: @(defaultGridPageSize),
                                 serverPaging: true,
                                 serverFiltering: true,
                                 serverSorting: true
                             },
                             pageable: {
                                 refresh: true,
-                                numeric: false,
-                                previousNext: false,
-                                info: false,
+                                pageSizes: [@(gridPageSizes)],
                                 @await Html.PartialAsync("_GridPagerMessages")
                             },
                             editable: {
@@ -90,7 +94,7 @@
                     @T("Admin.Promotions.Discounts.AppliedToManufacturers.AddNew")
                 </button>
                 <input type="submit" id="btnRefreshManufacturers" style="display: none" />
-                <script type="text/javascript">
+                <script>
                     $(document).ready(function() {
                         $('#btnRefreshManufacturers').click(function() {
                             //refresh grid
@@ -111,5 +115,5 @@
             </div>
         }
     </div>
-    @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_discount_details_applied_to_manufacturers_bottom", additionalData = Model.Id })
+    @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.DiscountDetailsAppliedToManufacturersBottom, additionalData = Model })
 </div>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nop.Core.Domain.Common;
 using Nop.Core.Infrastructure;
@@ -77,12 +78,14 @@ namespace Nop.Web.Areas.Admin.Controllers
         public override JsonResult Json(object data)
         {
             //use IsoDateFormat on writing JSON text to fix issue with dates in KendoUI grid
-            //TODO rename setting
-            var useIsoDateTime = EngineContext.Current.Resolve<AdminAreaSettings>().UseIsoDateTimeConverterInJson;
-            var serializerSettings = new JsonSerializerSettings
+            var useIsoDateFormat = EngineContext.Current.Resolve<AdminAreaSettings>()?.UseIsoDateFormatInJsonResult ?? false;
+            var serializerSettings = EngineContext.Current.Resolve<IOptions<MvcJsonOptions>>()?.Value?.SerializerSettings 
+                ?? new JsonSerializerSettings();
+            if (useIsoDateFormat)
             {
-                DateFormatHandling = useIsoDateTime ? DateFormatHandling.IsoDateFormat : DateFormatHandling.MicrosoftDateFormat                
-            };
+                serializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                serializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Unspecified;
+            }
 
             return base.Json(data, serializerSettings);
         }
