@@ -1,6 +1,5 @@
 ﻿using System;
 using Nop.Core;
-using Nop.Core.Domain.Payments;
 using Nop.Plugin.Payments.Square.Domain;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
@@ -19,9 +18,8 @@ namespace Nop.Plugin.Payments.Square.Services
 
         private readonly ILocalizationService _localizationService;
         private readonly ILogger _logger;
-        private readonly IPaymentService _paymentService;
+        private readonly IPaymentPluginManager _paymentPluginManager;
         private readonly ISettingService _settingService;
-        private readonly PaymentSettings _paymentSettings;
         private readonly SquarePaymentManager _squarePaymentManager;
         private readonly SquarePaymentSettings _squarePaymentSettings;
 
@@ -31,19 +29,17 @@ namespace Nop.Plugin.Payments.Square.Services
 
         public RenewAccessTokenTask(ILocalizationService localizationService,
             ILogger logger,
-            IPaymentService paymentService,
+            IPaymentPluginManager paymentPluginManager,
             ISettingService settingService,
-            PaymentSettings paymentSettings,
             SquarePaymentManager squarePaymentManager,
             SquarePaymentSettings squarePaymentSettings)
         {
-            this._localizationService = localizationService;
-            this._logger = logger;
-            this._paymentService = paymentService;
-            this._settingService = settingService;
-            this._paymentSettings = paymentSettings;
-            this._squarePaymentManager = squarePaymentManager;
-            this._squarePaymentSettings = squarePaymentSettings;
+            _localizationService = localizationService;
+            _logger = logger;
+            _paymentPluginManager = paymentPluginManager;
+            _settingService = settingService;
+            _squarePaymentManager = squarePaymentManager;
+            _squarePaymentSettings = squarePaymentSettings;
         }
 
         #endregion
@@ -56,7 +52,7 @@ namespace Nop.Plugin.Payments.Square.Services
         public void Execute()
         {
             //whether plugin is active
-            if (!_paymentService.LoadPaymentMethodBySystemName(SquarePaymentDefaults.SystemName).IsPaymentMethodActive(_paymentSettings))
+            if (!_paymentPluginManager.IsPluginActive(SquarePaymentDefaults.SystemName))
                 return;
 
             //do not execute for sandbox environment

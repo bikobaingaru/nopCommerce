@@ -22,6 +22,21 @@ $(document).ready(function () {
     $('.multi-store-override-option').each(function (k, v) {
         checkOverriddenStoreValue(v, $(v).attr('data-for-input-selector'));
     });
+
+    //we must intercept all events of pressing the Enter button in the search bar to be sure that the input focus remains in the context of the search
+    $("div.panel-search").keypress(function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            $("button.btn-search").click();
+            return false;
+        }
+    });
+
+    //pressing Enter in the tablex should not lead to any action
+    $("div[id$='-grid']").keypress(function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            return false;
+        }
+    });
 });
 
 function checkAllOverriddenStoreValue(item) {
@@ -114,14 +129,28 @@ function saveUserPreferences(url, name, value) {
         type: 'post',
         data: postData,
         dataType: 'json',
+        success: function() {
+          $("#ajaxBusy span").removeClass("no-ajax-loader");
+        },
         error: function(xhr, ajaxOptions, thrownError) {
-            alert('Failed to save preferences.');
+          alert('Failed to save preferences.');
+          $("#ajaxBusy span").removeClass("no-ajax-loader");
         }
-    });
+  });
+
 };
 
 function warningValidation(validationUrl, warningElementName, passedParameters) {
     addAntiForgeryToken(passedParameters);
+    var element = $('[data-valmsg-for="' + warningElementName + '"]');
+
+    var messageElement = element.siblings('.field-validation-custom');
+    if (messageElement.length == 0) {
+        messageElement = $(document.createElement("span"));
+        messageElement.addClass('field-validation-custom');
+        element.after(messageElement);
+    }
+
     $.ajax({
         cache: false,
         url: validationUrl,
@@ -129,15 +158,17 @@ function warningValidation(validationUrl, warningElementName, passedParameters) 
         dataType: "json",
         data: passedParameters,
         success: function (data) {
-            var element = $('[data-valmsg-for="' + warningElementName + '"]');
             if (data.Result) {
-                element.addClass("warning");
-                element.html(data.Result);
+                messageElement.addClass("warning");
+                messageElement.html(data.Result);
+            } else {
+                messageElement.removeClass("warning");
+                messageElement.html('');
             }
-            else {
-                element.removeClass("warning");
-                element.html('');
-            }
+        },
+        error: function () {
+            messageElement.removeClass("warning");
+            messageElement.html('');
         }
     });
 };
@@ -200,4 +231,47 @@ $(document).ajaxStart(function () {
     $('#ajaxBusy').show();
 }).ajaxStop(function () {
     $('#ajaxBusy').hide();
+    });
+
+//no-tabs solution
+$(document).ready(function () {
+    $(".panel.collapsible-panel >.panel-heading").click(WrapAndSaveBlockData);
 });
+
+function WrapAndSaveBlockData() {
+    $(this).parents(".panel").find(">.panel-container").slideToggle();
+    $("#ajaxBusy span").addClass("no-ajax-loader");
+    var icon = $(this).find("i.toggle-icon");
+    if ($(this).hasClass("opened")) {
+        icon.removeClass("fa-minus");
+        icon.addClass("fa-plus");
+        saveUserPreferences(rootAppPath + 'admin/preferences/savepreference', $(this).attr("data-hideAttribute"), true);
+    } else {
+        icon.addClass("fa-minus");
+        icon.removeClass("fa-plus");
+        saveUserPreferences(rootAppPath + 'admin/preferences/savepreference', $(this).attr("data-hideAttribute"), false);
+    }
+
+    $(this).toggleClass("opened");
+}
+
+//collapse search block
+$(document).ready(function () {
+  $(".row.search-row").click(ToggleSearchBlockAndSavePreferences);
+});
+
+function ToggleSearchBlockAndSavePreferences() {
+    $(this).parents(".panel-search").find(".search-body").slideToggle();
+    var icon = $(this).find(".icon-collapse i");
+    if ($(this).hasClass("opened")) {
+      icon.removeClass("fa-angle-up");
+      icon.addClass("fa-angle-down");
+      saveUserPreferences(rootAppPath + 'admin/preferences/savepreference', $(this).attr("data-hideAttribute"), true);
+    } else {
+      icon.addClass("fa-angle-up");
+      icon.removeClass("fa-angle-down");
+      saveUserPreferences(rootAppPath + 'admin/preferences/savepreference', $(this).attr("data-hideAttribute"), false);
+    }
+
+    $(this).toggleClass("opened");
+}

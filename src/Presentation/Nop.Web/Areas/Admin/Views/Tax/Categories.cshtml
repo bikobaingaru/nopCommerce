@@ -1,4 +1,6 @@
-@{    
+@model TaxCategorySearchModel
+
+@{
     //page title
     ViewBag.Title = T("Admin.Configuration.Tax.Categories").Text;
     //active menu item (system name)
@@ -6,19 +8,17 @@
 }
 
 <nop-antiforgery-token />
-<div class="content-header clearfix">
-    <h1 class="pull-left">
-        @T("Admin.Configuration.Tax.Categories")
-    </h1>
-    <div class="pull-right">
-        &nbsp;
-        @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.TaxCategoryListButtons })
+
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.Configuration.Tax.Categories")
+        </h1>
     </div>
-</div>
 
 <div class="content">
     <div class="form-horizontal">
         <div class="panel-group">
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.TaxCategoryListButtons })
             <div class="panel panel-default">
                 <div class="panel-body">
                     <div id="tax-categories-grid"></div>
@@ -77,15 +77,14 @@
                                         // Cancel the changes
                                         this.cancelChanges();
                                     },
+                                    pageSize: @(Model.PageSize),
                                     serverPaging: true,
                                     serverFiltering: true,
                                     serverSorting: true
                                 },
                                 pageable: {
                                     refresh: true,
-                                    numeric: false,
-                                    previousNext: false,
-                                    info: false,
+                                    pageSizes: [@(Model.AvailablePageSizes)],
                                     @await Html.PartialAsync("_GridPagerMessages")
                                 },
                                 toolbar: [{ name: "create", text: "@T("Admin.Common.AddNewRecord")" }],
@@ -95,28 +94,28 @@
                                 },
                                 scrollable: false,
                                 columns: [
-                                {
-                                    field: "Name",
-                                    title: "@T("Admin.Configuration.Tax.Categories.Fields.Name")",
-                                    width: 300
-                                }, {
-                                    field: "DisplayOrder",
-                                    title: "@T("Admin.Configuration.Tax.Categories.Fields.DisplayOrder")",
-                                    //integer format
-                                    format: "{0:0}",
-                                    width: 100
-                                }, {
-                                    command: [
                                     {
-                                        name: "edit",
-                                        text: {
-                                            edit: "@T("Admin.Common.Edit")",
-                                            update: "@T("Admin.Common.Update")",
-                                            cancel: "@T("Admin.Common.Cancel")"
-                                        }
+                                        field: "Name",
+                                        title: "@T("Admin.Configuration.Tax.Categories.Fields.Name")",
+                                        width: 300
                                     }, {
-                                        name: "destroy",
-                                        text: "@T("Admin.Common.Delete")"
+                                        field: "DisplayOrder",
+                                        title: "@T("Admin.Configuration.Tax.Categories.Fields.DisplayOrder")",
+                                        //integer format
+                                        format: "{0:0}",
+                                        width: 100
+                                    }, {
+                                        command: [
+                                            {
+                                                name: "edit",
+                                                text: {
+                                                    edit: "@T("Admin.Common.Edit")",
+                                                    update: "@T("Admin.Common.Update")",
+                                                    cancel: "@T("Admin.Common.Cancel")"
+                                                }
+                                            }, {
+                                                name: "destroy",
+                                                text: "@T("Admin.Common.Delete")"
                                             }
                                         ],
                                         width: 200

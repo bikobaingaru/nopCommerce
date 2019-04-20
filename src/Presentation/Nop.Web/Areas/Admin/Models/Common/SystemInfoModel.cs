@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+using Nop.Web.Framework.Models;
 
 namespace Nop.Web.Areas.Admin.Models.Common
 {
@@ -9,8 +9,8 @@ namespace Nop.Web.Areas.Admin.Models.Common
     {
         public SystemInfoModel()
         {
-            this.Headers = new List<HeaderModel>();
-            this.LoadedAssemblies = new List<LoadedAssembly>();
+            Headers = new List<HeaderModel>();
+            LoadedAssemblies = new List<LoadedAssembly>();
         }
 
         [NopResourceDisplayName("Admin.System.SystemInfo.ASPNETInfo")]

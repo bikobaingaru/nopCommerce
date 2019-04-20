@@ -1,8 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
+using Nop.Core.Infrastructure;
+using Nop.Services.Logging;
 using Nop.Services.Media;
 using Nop.Web.Framework.Mvc.Filters;
 
@@ -10,16 +11,38 @@ namespace Nop.Web.Areas.Admin.Controllers
 {
     public partial class PictureController : BaseAdminController
     {
-        private readonly IPictureService _pictureService;
+        #region Fields
 
-        public PictureController(IPictureService pictureService)
+        private readonly IDownloadService _downloadService;
+        private readonly ILogger _logger;
+        private readonly INopFileProvider _fileProvider;
+        private readonly IPictureService _pictureService;
+        private readonly IWorkContext _workContext;
+
+        #endregion
+
+        #region Ctor
+
+        public PictureController(IDownloadService downloadService,
+            ILogger logger,
+            INopFileProvider fileProvider,
+            IPictureService pictureService,
+            IWorkContext workContext)
         {
-            this._pictureService = pictureService;
+            _downloadService = downloadService;
+            _logger = logger;
+            _fileProvider = fileProvider;
+            _pictureService = pictureService;
+            _workContext = workContext;
         }
+
+        #endregion
+
+        #region Methods
 
         [HttpPost]
         //do not validate request token (XSRF)
-        [AdminAntiForgery(true)] 
+        [AdminAntiForgery(true)]
         public virtual IActionResult AsyncUpload()
         {
             //if (!_permissionService.Authorize(StandardPermissionProvider.UploadPictures))
@@ -31,23 +54,22 @@ namespace Nop.Web.Areas.Admin.Controllers
                 return Json(new
                 {
                     success = false,
-                    message = "No file uploaded",
-                    downloadGuid = Guid.Empty,
+                    message = "No file uploaded"
                 });
             }
 
-            var fileBinary = httpPostedFile.GetDownloadBits();
+            var fileBinary = _downloadService.GetDownloadBits(httpPostedFile);
 
-            var qqFileNameParameter = "qqfilename";
+            const string qqFileNameParameter = "qqfilename";
             var fileName = httpPostedFile.FileName;
             if (string.IsNullOrEmpty(fileName) && Request.Form.ContainsKey(qqFileNameParameter))
                 fileName = Request.Form[qqFileNameParameter].ToString();
             //remove path (passed in IE)
-            fileName = Path.GetFileName(fileName);
+            fileName = _fileProvider.GetFileName(fileName);
 
             var contentType = httpPostedFile.ContentType;
 
-            var fileExtension = Path.GetExtension(fileName);
+            var fileExtension = _fileProvider.GetFileExtension(fileName);
             if (!string.IsNullOrEmpty(fileExtension))
                 fileExtension = fileExtension.ToLowerInvariant();
 
@@ -84,11 +106,31 @@ namespace Nop.Web.Areas.Admin.Controllers
                 }
             }
 
-            var picture = _pictureService.InsertPicture(fileBinary, contentType, null);
-            //when returning JSON the mime-type must be set to text/plain
-            //otherwise some browsers will pop-up a "Save As" dialog.
-            return Json(new { success = true, pictureId = picture.Id,
-                imageUrl = _pictureService.GetPictureUrl(picture, 100) });
+            try
+            {
+                var picture = _pictureService.InsertPicture(fileBinary, contentType, null);
+
+                //when returning JSON the mime-type must be set to text/plain
+                //otherwise some browsers will pop-up a "Save As" dialog.
+                return Json(new
+                {
+                    success = true,
+                    pictureId = picture.Id,
+                    imageUrl = _pictureService.GetPictureUrl(picture, 100)
+                });
+            }
+            catch (Exception exc)
+            {
+                _logger.Error(exc.Message, exc, _workContext.CurrentCustomer);
+
+                return Json(new
+                {
+                    success = false,
+                    message = "Picture cannot be saved"
+                });
+            }
         }
+
+        #endregion
     }
 }

@@ -1,32 +1,44 @@
-@model BulkEditListModel
-@inject AdminAreaSettings adminAreaSettings
+@model BulkEditProductSearchModel
 
 @{
-    var defaultGridPageSize = adminAreaSettings.DefaultGridPageSize;
-    var gridPageSizes = adminAreaSettings.GridPageSizes;
-
     //page title
     ViewBag.Title = T("Admin.Catalog.BulkEdit").Text;
     //active menu item (system name)
-    Html.SetActiveMenuItemSystemName("Bulk edit products");
+    Html.SetActiveMenuItemSystemName("Products");
+}
+
+@{
+    const string hideSearchBlockAttributeName = "BulkEditPage.HideSearchBlock";
+    var hideSearchBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideSearchBlockAttributeName);
 }
 
 <form asp-controller="Product" asp-action="BulkEdit" method="post">
-        <div class="content-header clearfix">
-            <h1 class="pull-left">
-                @T("Admin.Catalog.BulkEdit")
-            </h1>
-            <div class="pull-right">
-                &nbsp;
-                @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductBulkEditButtons })
-            </div>
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.Catalog.BulkEdit")
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="List">@T("Admin.Catalog.Products.BackToList")</a>
+            </small>
+        </h1>
+        <div class="pull-right">
+            &nbsp;
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductBulkEditButtons })
         </div>
+    </div>
 
-        <div class="content">
-            <div class="form-horizontal">
-                <div class="panel-group">
-                    <div class="panel panel-default panel-search">
-                        <div class="panel-body">
+    <div class="content">
+        <div class="form-horizontal">
+            <div class="panel-group">
+                <div class="panel panel-default panel-search">
+                    <div class="panel-body">
+                        <div class="row search-row @(!hideSearchBlock ? "opened" : "")" data-hideAttribute="@hideSearchBlockAttributeName">
+                            <div class="search-text">@T("Admin.Common.Search")</div>
+                            <div class="icon-search"><i class="fa fa-search" aria-hidden="true"></i></div>
+                            <div class="icon-collapse"><i class="fa fa-angle-down" aria-hidden="true"></i></div>
+                        </div>
+
+                        <div class="search-body @(hideSearchBlock ? "closed" : "")">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -73,12 +85,13 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <div id="products-grid"></div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div id="products-grid"></div>
 
-                            <script>
+                        <script>
                             $(document).ready(function() {
                                 $("#products-grid").kendoGrid({
                                     dataSource: {
@@ -88,7 +101,16 @@
                                                 url: "@Html.Raw(Url.Action("BulkEditSelect", "Product"))",
                                                 type: "POST",
                                                 dataType: "json",
-                                                data: additionalData
+                                                data: function() {
+                                                    var data = {
+                                                        SearchProductName: $('#@Html.IdFor(model => model.SearchProductName)').val(),
+                                                        SearchCategoryId: $('#SearchCategoryId').val(),
+                                                        SearchManufacturerId: $('#SearchManufacturerId').val(),
+                                                        SearchProductTypeId: $('#SearchProductTypeId').val()
+                                                    };
+                                                    addAntiForgeryToken(data);
+                                                    return data;
+                                                }
                                             },
                                             update: {
                                                 url: "@Html.Raw(Url.Action("BulkEditUpdate", "Product"))",
@@ -157,14 +179,14 @@
                                         },
                                         //bulk editing
                                         batch: true,
-                                        pageSize: @(defaultGridPageSize),
+                                        pageSize: @(Model.PageSize),
                                         serverPaging: true,
                                         serverFiltering: true,
                                         serverSorting: true
                                     },
                                     pageable: {
                                         refresh: true,
-                                        pageSizes: [@(gridPageSizes)],
+                                        pageSizes: [@(Model.AvailablePageSizes)],
                                         @await Html.PartialAsync("_GridPagerMessages")
                                     },
                                     toolbar: [{ name: "save", text: "@T("Admin.Common.SaveChanges")" }, { name: "cancel", text: "@T("Admin.Common.CancelChanges")" }],
@@ -235,9 +257,9 @@
                                     ]
                                 } );
                             });
-                            </script>
+                        </script>
 
-                            <script>
+                        <script>
                             $(document).ready(function () {
                                 $('#search-products').click(function () {
                                     var grid = $('#products-grid').data('kendoGrid');
@@ -245,29 +267,11 @@
                                     //grid.dataSource.read(); we already loaded the grid above using "page" function
                                     return false;
                                 });
-
-                                $("#@Html.IdFor(model => model.SearchProductName)").keydown(function (event) {
-                                    if (event.keyCode == 13) {
-                                        $("#search-products").click();
-                                        return false;
-                                    }
-                                });
                             });
-
-                            function additionalData() {
-                                var data = {
-                                    SearchProductName: $('#@Html.IdFor(model => model.SearchProductName)').val(),
-                                    SearchCategoryId: $('#SearchCategoryId').val(),
-                                    SearchManufacturerId: $('#SearchManufacturerId').val(),
-                                    SearchProductTypeId: $('#SearchProductTypeId').val()
-                                };
-                                addAntiForgeryToken(data);
-                                return data;
-                            }
-                            </script>
-                        </div>
+                        </script>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </form>

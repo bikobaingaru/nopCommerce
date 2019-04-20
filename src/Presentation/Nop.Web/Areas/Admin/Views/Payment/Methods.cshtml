@@ -1,4 +1,6 @@
-@{    
+@model PaymentMethodsModel
+
+@{
     //page title
     ViewBag.Title = T("Admin.Configuration.Payment.Methods").Text;
     //active menu item (system name)
@@ -6,19 +8,17 @@
 }
 
 <nop-antiforgery-token />
+
 <div class="content-header clearfix">
     <h1 class="pull-left">
         @T("Admin.Configuration.Payment.Methods")
     </h1>
-    <div class="pull-right">
-       &nbsp;
-        @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.PaymentMethodListButtons })
-    </div>
 </div>
 
 <div class="content">
     <div class="form-horizontal">
         <div class="panel-group">
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.PaymentMethodListTop, additionalData = Model })
             <div class="panel panel-default">
                 <div class="panel-body">
                     <p>
@@ -75,15 +75,14 @@
                                         // Cancel the changes
                                         this.cancelChanges();
                                     },
+                                    pageSize: @(Model.PaymentsMethod.PageSize),
                                     serverPaging: true,
                                     serverFiltering: true,
                                     serverSorting: true
                                 },
                                 pageable: {
                                     refresh: true,
-                                    numeric: false,
-                                    previousNext: false,
-                                    info: false,
+                                    pageSizes: [@(Model.PaymentsMethod.AvailablePageSizes)],
                                     @await Html.PartialAsync("_GridPagerMessages")
                                 },
                                 editable: {
@@ -92,79 +91,85 @@
                                 },
                                 scrollable: false,
                                 columns: [
-                                {
-                                    field: "FriendlyName",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.FriendlyName")",
-                                    width: 250
-                                }, {
-                                    field: "SystemName",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.SystemName")",
-                                    width: 250
-                                }, {
-                                    field: "LogoUrl",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.Logo")",
-                                    width: 100,
-                                    template: '<img src="#=LogoUrl#" />'
-                                }, {
-                                    field: "SupportCapture",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportCapture")",
-                                    width: 150,
-                                    headerAttributes: { style: "text-align:center" },
-                                    attributes: { style: "text-align:center" },
-                                    template: '# if(SupportCapture) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                }, {
-                                    field: "SupportRefund",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportRefund")",
-                                    width: 100,
-                                    headerAttributes: { style: "text-align:center" },
-                                    attributes: { style: "text-align:center" },
-                                    template: '# if(SupportRefund) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                }, {
-                                    field: "SupportPartiallyRefund",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportPartiallyRefund")",
-                                    width: 150,
-                                    headerAttributes: { style: "text-align:center" },
-                                    attributes: { style: "text-align:center" },
-                                    template: '# if(SupportPartiallyRefund) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                }, {
-                                    field: "SupportVoid",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportVoid")",
-                                    width: 100,
-                                    headerAttributes: { style: "text-align:center" },
-                                    attributes: { style: "text-align:center" },
-                                    template: '# if(SupportVoid) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                }, {
-                                    field: "RecurringPaymentType",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.RecurringPaymentType")",
-                                    width: 250
-                                }, {
-                                    field: "DisplayOrder",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.DisplayOrder")",
-                                    //integer format
-                                    format: "{0:0}",
-                                    width: 150
-                                }, {
-                                    field: "IsActive",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Fields.IsActive")",
-                                    width: 100,
-                                    headerAttributes: { style: "text-align:center" },
-                                    attributes: { style: "text-align:center" },
-                                    template: '# if(IsActive) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                }, {
-                                    field: "SystemName",
-                                    title: "@T("Admin.Configuration.Payment.Methods.Configure")",
-                                    width: 150,
-                                    template: '# if(ConfigurationUrl && ConfigurationUrl.length > 0) {# <a class="btn btn-default" href="#=ConfigurationUrl#"><i class="fa fa-cog"></i>@T("Admin.Configuration.Payment.Methods.Configure")</a>#} #'
-                                }, {
-                                    command: {
-                                        name: "edit",
-                                        text: {
-                                            edit: "@T("Admin.Common.Edit")",
-                                            update: "@T("Admin.Common.Update")",
-                                            cancel: "@T("Admin.Common.Cancel")"
-                                        }
-                                    },
-                                    title: "@T("Admin.Common.Edit")",
+                                    {
+                                        field: "FriendlyName",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.FriendlyName")",
+                                        width: 250
+                                    }, {
+                                        field: "SystemName",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.SystemName")",
+                                        width: 250
+                                    }, {
+                                        field: "LogoUrl",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.Logo")",
+                                        width: 100,
+                                        template: '<img src="#=LogoUrl#" />'
+                                    }, {
+                                        field: "SupportCapture",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportCapture")",
+                                        width: 150,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template:
+                                            '# if(SupportCapture) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    }, {
+                                        field: "SupportRefund",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportRefund")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template:
+                                            '# if(SupportRefund) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    }, {
+                                        field: "SupportPartiallyRefund",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportPartiallyRefund")",
+                                        width: 150,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template:
+                                            '# if(SupportPartiallyRefund) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    }, {
+                                        field: "SupportVoid",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.SupportVoid")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template:
+                                            '# if(SupportVoid) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    }, {
+                                        field: "RecurringPaymentType",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.RecurringPaymentType")",
+                                        width: 250
+                                    }, {
+                                        field: "DisplayOrder",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.DisplayOrder")",
+                                        //integer format
+                                        format: "{0:0}",
+                                        width: 150
+                                    }, {
+                                        field: "IsActive",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Fields.IsActive")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template:
+                                            '# if(IsActive) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    }, {
+                                        field: "SystemName",
+                                        title: "@T("Admin.Configuration.Payment.Methods.Configure")",
+                                        width: 150,
+                                        template:
+                                            '# if(ConfigurationUrl && ConfigurationUrl.length > 0) {# <a class="btn btn-default" href="#=ConfigurationUrl#"><i class="fa fa-cog"></i>@T("Admin.Configuration.Payment.Methods.Configure")</a>#} #'
+                                    }, {
+                                        command: {
+                                            name: "edit",
+                                            text: {
+                                                edit: "@T("Admin.Common.Edit")",
+                                                update: "@T("Admin.Common.Update")",
+                                                cancel: "@T("Admin.Common.Cancel")"
+                                            }
+                                        },
+                                        title: "@T("Admin.Common.Edit")",
                                         width: 150
                                     }
                                 ]
@@ -173,6 +178,7 @@
                     </script>
                 </div>
             </div>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.PaymentMethodListBottom, additionalData = Model })
         </div>
     </div>
 </div>
